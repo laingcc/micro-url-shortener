@@ -1,10 +1,16 @@
 from db import *
-from bottle import route, run, template, request, response
+from bottle import route, run, template, request, response, static_file
+
+@route('/static/<filename:path>')
+def serve_static(filename):
+    return static_file(filename, root="static/")
 
 
 @route('/')
 def index():
     return '''
+    <!doctype html>
+    <link rel="stylesheet" type="text/css" href="/static/styles.css">
         <form action="/shortify" method="post">
             URL to shorten: <input name="url" type="text" />
             <input value="Shorten" type="submit" />
@@ -16,7 +22,7 @@ def index():
 def shortify():
     url = request.forms.get('url')
     shortUrl = db.add_url(url)
-    return template('<b>Short URL: {{scheme}}://{{host}}/{{shortUrl}}</b>', scheme=request.urlparts.scheme, host=request.urlparts.netloc, shortUrl=shortUrl)
+    return '{scheme}://{host}/{shortUrl}</b>'.format(scheme=request.urlparts.scheme, host=request.urlparts.netloc, shortUrl=shortUrl)
 
 
 @route('/<shortUrl>')
